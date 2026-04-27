@@ -16,3 +16,12 @@ Thumbs.db
 *.o
 *.a
 *.so
+
+# Local toolchain artifacts
+tools/gcc_build/
+tools/gcc_build.log
+tools/gcc_install/
+
+# Common temp files
+*.log
+*.tmp

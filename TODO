@@ -36,3 +36,24 @@
 - [P1] Phase 6: Compat adapters (Wireshark, MCAP, ROS 2, FIDL, protobuf)
 - [P1] Fuzz testing for deserializer (AFL / libfuzzer)
 - [P2] Benchmark vs vsomeip serializer throughput
+
+## Performance Optimization
+
+- [P0] E2E check: replace vector copy with stack array (alloca / fixed buffer)
+  in profile_04::check() and profile_07::check(). Eliminates heap allocation on
+  every check call. Expected gain: ~20-30ns per check.
+
+- [P1] CRC-8/SAE-J1850: add slicing-by-8 fast path (same as CRC-32/CRC-64).
+  Currently 87ns/64B byte-at-a-time vs CRC-32 19ns/64B with slice8.
+  Expected gain: ~50-60ns/64B.
+
+- [P1] Deserialize small struct (8B) is 7.2ns vs serialize 0.7ns — too many
+  per-type branches in deserialize_field. Restructure to match serialize_field's
+  single serialize_primitive dispatch. Expected gain: ~2-3ns.
+
+- [P2] sync_wait overhead: ~80ns of the 97ns round-trip is stdexec sync_wait
+  machinery. Needs a lightweight custom single-thread scheduler or inline
+  completion path to bypass. High difficulty.
+
+- [P2] Security policy 100-rule linear scan (38ns) → binary search or flat_map
+  keyed by (service,method). Expected gain: ~20ns for large rule sets.

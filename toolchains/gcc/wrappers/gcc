@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+WRAPPER_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$WRAPPER_DIR/resolve_gcc.sh"
+exec "$GCC_INSTALL/bin/$(basename "$0")" "$@"

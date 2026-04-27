@@ -1,0 +1,10 @@
+module(
+    name = "bsomeip",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "rules_cc", version = "0.1.1")
+bazel_dep(name = "platforms", version = "0.0.10")
+
+# Register the custom GCC toolchain (built from third_party/compiler/gcc)
+register_toolchains("//toolchains/gcc:gcc_toolchain")

@@ -1,0 +1,38 @@
+# bsomeip TODO
+#
+# Convention:  Each item has a tag that matches grep-able TODO(tag) in source.
+# Priority:    [P0] blocker  [P1] should-fix  [P2] nice-to-have
+
+## GCC 16 Reflection Workarounds (compiler: GCC 16.0.1 20260421)
+
+- [P1] TODO(gcc16-workaround) — codec.hpp: `template for` (P1306 expansion
+  statements) / range-for over nonstatic_data_members_of() fails in
+  non-consteval context (vector<info> allocation → "not a constant expression
+  because it refers to operator new").  Workaround: consteval get_member<T>(i)
+  + index_sequence fold.  Revert to `template for` once GCC supports it.
+
+- [P1] TODO(gcc16-api) — codec.hpp: nonstatic_data_members_of() requires a
+  second `access_context` argument.  P2996 specifies single-arg form.  Switch
+  to single-arg when the API stabilises.
+
+- [P1] TODO(gcc16-annotations) — annotations.hpp: [[=expr]] annotation structs
+  are defined but the codec does not yet query annotations_of() per-member.
+  Codec always serialises big-endian without length prefix.  Wire up once GCC
+  stabilises annotation reflection.
+
+## Wire Format
+
+- [P2] TODO(bitfield-layout) — tp.hpp: tp_header bitfield struct layout is
+  implementation-defined.  We always use read_tp_header()/write_tp_header() for
+  the wire format; the struct is an in-memory convenience only.
+
+## Not Yet Implemented
+
+- [P0] Phase 2 remaining: echo server/client integration test, multicast sender
+- [P0] Phase 3 remaining: SD subscribe/ack flow, event→eventgroup mapping
+- [P0] Phase 4 remaining: reflection-based auto-generation from annotated service structs
+- [P0] Phase 5: E2E protection + Security policies — DONE
+- [P1] Phase 5: E2E protection + Security policies — DONE
+- [P1] Phase 6: Compat adapters (Wireshark, MCAP, ROS 2, FIDL, protobuf)
+- [P1] Fuzz testing for deserializer (AFL / libfuzzer)
+- [P2] Benchmark vs vsomeip serializer throughput

@@ -1,0 +1,167 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+
+package(default_visibility = ["//visibility:public"])
+
+# bsomeip::async — execution abstraction (isolates stdexec/P2300)
+cc_library(
+    name = "async",
+    hdrs = glob(["include/bsomeip/async/**/*.hpp"]),
+    includes = ["include"],
+    deps = ["//third_party/stdexec:stdexec"],
+)
+
+# bsomeip::wire — SOME/IP wire format, types, reflection codec, TP
+cc_library(
+    name = "wire",
+    hdrs = glob(["include/bsomeip/wire/**/*.hpp"]) +
+           glob(["include/bsomeip/platform/**/*.hpp"]) + [
+        "include/bsomeip/wire.hpp",
+    ],
+    includes = ["include"],
+    linkopts = ["-lpthread"],
+)
+
+# bsomeip::io — io_uring transport, socket senders, buffer pool, framer
+cc_library(
+    name = "io",
+    hdrs = glob(["include/bsomeip/io/**/*.hpp"]),
+    includes = ["include"],
+    deps = [
+        ":wire",
+        ":async",
+    ],
+    linkopts = ["-lpthread"],
+)
+
+# Test: wire format round-trip
+cc_test(
+    name = "wire_test",
+    srcs = ["test/wire_test.cpp"],
+    deps = [":wire"],
+)
+
+# Test: io_uring + framer
+cc_test(
+    name = "io_test",
+    srcs = ["test/io_test.cpp"],
+    deps = [":io"],
+)
+
+# bsomeip::route — Service registry, dispatcher, routing manager
+# bsomeip::sd — Service Discovery entries, options, message codec, state machine
+cc_library(
+    name = "route",
+    hdrs = glob(["include/bsomeip/route/**/*.hpp"]) +
+           glob(["include/bsomeip/sd/**/*.hpp"]),
+    includes = ["include"],
+    deps = [":wire"],
+    linkopts = ["-lpthread"],
+)
+
+# Test: route + SD
+cc_test(
+    name = "route_test",
+    srcs = ["test/route_test.cpp"],
+    deps = [":route"],
+)
+
+# bsomeip::api — Application, skeleton, proxy, config
+cc_library(
+    name = "api",
+    hdrs = glob(["include/bsomeip/api/**/*.hpp"]) +
+           glob(["include/bsomeip/config/**/*.hpp"]),
+    includes = ["include"],
+    deps = [
+        ":route",
+        ":async",
+    ],
+    linkopts = ["-lpthread"],
+)
+
+# Test: application API (sender-based)
+cc_test(
+    name = "api_test",
+    srcs = ["test/api_test.cpp"],
+    deps = [":api"],
+)
+
+# bsomeip::e2e — E2E protection profiles (CRC, counter, sender adaptors)
+cc_library(
+    name = "e2e",
+    hdrs = glob(["include/bsomeip/e2e/**/*.hpp"]),
+    includes = ["include"],
+    deps = [
+        ":wire",
+        ":async",
+    ],
+    linkopts = ["-lpthread"],
+)
+
+# bsomeip::security — Access control policies and enforcer sender adaptor
+cc_library(
+    name = "security",
+    hdrs = glob(["include/bsomeip/security/**/*.hpp"]),
+    includes = ["include"],
+    deps = [
+        ":wire",
+        ":async",
+    ],
+    linkopts = ["-lpthread"],
+)
+
+# Test: E2E + Security
+cc_test(
+    name = "e2e_security_test",
+    srcs = ["test/e2e_security_test.cpp"],
+    deps = [":e2e", ":security"],
+)
+
+# bsomeip::comm — SOME/IP communication patterns (attribute, broadcast, rpc)
+cc_library(
+    name = "comm",
+    hdrs = glob(["include/bsomeip/comm/**/*.hpp"]),
+    includes = ["include"],
+    deps = [":api"],
+)
+
+# Benchmark: all layers
+cc_binary(
+    name = "bench",
+    srcs = ["bench/bench_main.cpp"],
+    deps = [":api", ":e2e", ":security"],
+    copts = ["-O2", "-DNDEBUG"],
+    linkopts = ["-lpthread"],
+)
+
+# Benchmark: bsomeip vs vsomeip comparison
+cc_binary(
+    name = "bench_vs_vsomeip",
+    srcs = ["bench/bench_vs_vsomeip.cpp"],
+    deps = [":api"],
+    copts = ["-O2", "-DNDEBUG"],
+    linkopts = ["-lpthread"],
+)
+
+# Benchmark: realistic communication patterns (attr, broadcast, rpc)
+cc_binary(
+    name = "bench_comm",
+    srcs = ["bench/bench_comm.cpp"],
+    deps = [":comm"],
+    copts = ["-O2", "-DNDEBUG"],
+    linkopts = ["-lpthread"],
+)
+
+# bsomeip::compat — vsomeip compatibility shim
+cc_library(
+    name = "compat",
+    hdrs = glob(["include/bsomeip/compat/**/*.hpp"]),
+    includes = ["include"],
+    deps = [":api"],
+)
+
+# Test: vsomeip compatibility layer
+cc_test(
+    name = "compat_test",
+    srcs = ["test/compat_test.cpp"],
+    deps = [":compat"],
+)

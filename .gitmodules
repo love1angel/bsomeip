@@ -1,0 +1,9 @@
+[submodule "third_party/stdexec"]
+	path = third_party/stdexec
+	url = https://github.com/NVIDIA/stdexec.git
+[submodule "third_party/compiler/gcc"]
+	path = third_party/compiler/gcc
+	url = https://github.com/gcc-mirror/gcc.git
+[submodule "third_party/vsomeip"]
+	path = third_party/vsomeip
+	url = https://github.com/COVESA/vsomeip.git
